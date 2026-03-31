@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const bhutanBirdingCommonIntro = `Nestling in the heart of the Himalayas and protected by a complex geography of high mountains and deep valleys, Bhutan is rated as one of the ‘top ten global hot spots’ of the world. The intriguing yet profound tale of the transformation of this traditional kingdom, without losing out on its traditional norms and values while embarking on a modern course of development in the last half a century has been both a story of sustainable and progressive development in harmony with its natural environment.
 
 Today, the proportion of land under forest cover is about 70% including shrub forest. An estimated 770 species of birds inhabit the unspoiled forests. The habitat of the avifauna is the spectacular epiphytic orchids, lichens ferns and mosses. It also harbors some of the most exotic species flora of the Eastern Himalayas with over 50 species of rhododendron along with an amazing variety of medicinal plants and magnolias. The valleys and even the roadside verges are home to colorful herbaceous perennials from mauve primulas to blue poppies and sweet-smelling shrubs. You can expect 400 species if your trip is conducted in Spring and about 300 species during other times.
@@ -31,6 +32,8 @@ const bhutanBirdingExcerpt2 =
 const bhutanBirdingExcerpt3 =
   "The entire country is bisected by a well-maintained paved road, permitting relatively easy access to habitats from 150m to 3,750m. One of the important features of Bhutan is that birding, especially in mid to late spring (late March to mid-May) is good virtually everywhere.";
 
+=======
+>>>>>>> ab8fcc69d5ddcc891ec5c20fd06c0a4f6a86fa27
 export const bhutanItineraries = [
     {
       id: "himalayan-wonderland",
@@ -355,6 +358,7 @@ Day 13: Delhi - Onward Destination
 In time transfer to airport to board flight for abroad.`,
     },
     {
+<<<<<<< HEAD
       id: "bhutan-birding-tour-1",
       title: "Bhutan Birding Tour - 1",
       duration: "11 Days",
@@ -552,6 +556,8 @@ Depart at noon for Guwahati, India.
 *****END OF THE TOUR******`,
     },
     {
+=======
+>>>>>>> ab8fcc69d5ddcc891ec5c20fd06c0a4f6a86fa27
       id: "best-of-bhutan",
       title: "Best of Bhutan",
       duration: "8 Days",
@@ -698,6 +704,10 @@ Morning drive to Paro airport for flight to onward destination.`,
 ];
 
 const cultureIds = ["himalayan-wonderland", "glimpse-of-bhutan", "nepal-bhutan-tour", "east-india-bhutan", "best-of-bhutan"];
+<<<<<<< HEAD
 const birdingIds = ["bhutan-birding-tour-1", "bhutan-birding-tour-2", "bhutan-birding-tour-3", "bird-trek-bhutan"];
+=======
+const birdingIds = ["bird-trek-bhutan"];
+>>>>>>> ab8fcc69d5ddcc891ec5c20fd06c0a4f6a86fa27
 export const cultureItineraries = cultureIds.map((id) => bhutanItineraries.find((i) => i.id === id)).filter(Boolean) as typeof bhutanItineraries;
 export const birdingItineraries = birdingIds.map((id) => bhutanItineraries.find((i) => i.id === id)).filter(Boolean) as typeof bhutanItineraries;

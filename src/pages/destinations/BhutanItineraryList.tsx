@@ -102,6 +102,7 @@ export function BhutanItineraryList({ itineraries }: BhutanItineraryListProps) {
       </CardHeader>
       <CardContent className="p-6 min-h-[150px]">
         {itinerary.overview && (
+<<<<<<< HEAD
           <p
             className="text-gray-600 mb-4 overflow-hidden"
             style={{
@@ -112,6 +113,9 @@ export function BhutanItineraryList({ itineraries }: BhutanItineraryListProps) {
           >
             {itinerary.overview}
           </p>
+=======
+          <p className="text-gray-600 mb-4">{itinerary.overview}</p>
+>>>>>>> ab8fcc69d5ddcc891ec5c20fd06c0a4f6a86fa27
         )}
         {itinerary.highlights && itinerary.highlights.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
