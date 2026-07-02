@@ -56,6 +56,20 @@ function renderWithHighlights(text: string) {
   return <>{nodes}</>;
 }
 
+type SectionImageRule = { match: string; images: string[] };
+
+function getSectionImages(
+  text: string,
+  rules: SectionImageRule[] | undefined
+): string[] | null {
+  if (!rules?.length) return null;
+  const sorted = [...rules].sort((a, b) => b.match.length - a.match.length);
+  for (const rule of sorted) {
+    if (text.includes(rule.match) && rule.images.length > 0) return rule.images;
+  }
+  return null;
+}
+
 interface SriLankaItineraryListProps {
   itineraries: SriLankaItinerary[];
   sectionTitle?: string;
@@ -67,6 +81,38 @@ export function SriLankaItineraryList({ itineraries, sectionTitle, sectionSubtit
   const [lightbox, setLightbox] = useState<{ open: boolean; src: string }>({ open: false, src: "" });
 
   if (itineraries.length === 0) return null;
+
+  const renderImageGrid = (
+    imgs: string[],
+    keyPrefix: string,
+    className = "grid grid-cols-2 md:grid-cols-3 gap-3 mb-4",
+    fit: "cover" | "contain" = "cover"
+  ) => (
+    <div className={className}>
+      {imgs.map((img, idx) => (
+        <button
+          key={`${keyPrefix}-${idx}`}
+          type="button"
+          onClick={() => setLightbox({ open: true, src: img })}
+          className={`group relative block w-full overflow-hidden rounded ${
+            fit === "contain" ? "border border-gray-100 bg-gray-50" : ""
+          }`}
+        >
+          <img
+            src={img}
+            alt={`${keyPrefix} ${idx + 1}`}
+            className={
+              fit === "contain"
+                ? "w-full h-auto max-h-96 object-contain mx-auto"
+                : "w-full h-28 md:h-32 object-cover rounded"
+            }
+            loading="lazy"
+          />
+          <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded" />
+        </button>
+      ))}
+    </div>
+  );
 
   const renderCard = (itinerary: SriLankaItinerary) => (
     <Card
@@ -114,26 +160,18 @@ export function SriLankaItineraryList({ itineraries, sectionTitle, sectionSubtit
         </div>
         {expandedId === itinerary.id && (
           <div className="mt-4 border-t pt-4">
-            {Array.isArray((itinerary as any).images) && (itinerary as any).images.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                {((itinerary as any).images as string[]).slice(0, 3).map((img, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setLightbox({ open: true, src: img })}
-                    className="group relative block"
-                  >
-                    <img
-                      src={img}
-                      alt={`${itinerary.title} ${idx + 1}`}
-                      className="w-full h-28 md:h-32 object-cover rounded"
-                      loading="lazy"
-                    />
-                    <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded" />
-                  </button>
-                ))}
-              </div>
-            )}
+            {Array.isArray((itinerary as any).headerImages) && (itinerary as any).headerImages.length > 0 &&
+              renderImageGrid(
+                (itinerary as any).headerImages,
+                `${itinerary.id}-header`,
+                "grid grid-cols-1 gap-4 mb-4",
+                "contain"
+              )}
+            {Array.isArray((itinerary as any).images) &&
+              (itinerary as any).images.length > 0 &&
+              !(itinerary as any).dayImages &&
+              !(itinerary as any).sectionImageRules &&
+              renderImageGrid(((itinerary as any).images as string[]).slice(0, 3), itinerary.id)}
             {"details" in itinerary && (itinerary as any).details ? (
               <div className="bg-travel-sky/80 border border-travel-blue/20 rounded-lg p-5 space-y-4 shadow-sm">
                 {((itinerary as any).details as string)
@@ -141,8 +179,24 @@ export function SriLankaItineraryList({ itineraries, sectionTitle, sectionSubtit
                   .map((block, idx) => {
                     const trimmed = block.trim();
                     const isDay = /^Day\s*\d+/i.test(trimmed);
+                    const dayNumMatch = trimmed.match(/^Day\s*0?(\d+)/i);
+                    const dayNum = dayNumMatch ? Number(dayNumMatch[1]) : null;
+                    const sectionRules = (itinerary as any).sectionImageRules as SectionImageRule[] | undefined;
+                    const blockImages =
+                      getSectionImages(trimmed, sectionRules) ??
+                      (dayNum && (itinerary as any).dayImages?.[dayNum]
+                        ? ((itinerary as any).dayImages[dayNum] as string[])
+                        : null);
                     const isWhatYouGet = /^What you get:/i.test(trimmed);
                     const isWhatYouDont = /^What you don't:/i.test(trimmed);
+                    const isSubheading =
+                      !isDay &&
+                      !isWhatYouGet &&
+                      !isWhatYouDont &&
+                      block.split("\n").length === 1 &&
+                      trimmed.length < 80 &&
+                      /^[A-Z]/.test(trimmed) &&
+                      !trimmed.endsWith(".");
                     if (isWhatYouGet) {
                       const content = trimmed.replace(/^What you get:\s*/i, "").replace(/\s+/g, " ").trim();
                       const items = content.split(/\.\s+/).filter(Boolean).map((s) => s.replace(/\.$/, "").trim());
@@ -183,12 +237,35 @@ export function SriLankaItineraryList({ itineraries, sectionTitle, sectionSubtit
                         </div>
                       );
                     }
+                    const imageGrid =
+                      blockImages && blockImages.length > 0 ? (
+                        <div className="mt-3">
+                          {renderImageGrid(
+                            blockImages,
+                            `${itinerary.id}-block-${idx}`,
+                            blockImages.length === 1
+                              ? "grid grid-cols-1 gap-3"
+                              : "grid grid-cols-1 sm:grid-cols-2 gap-3",
+                            "contain"
+                          )}
+                        </div>
+                      ) : null;
+
                     return (
-                      <div key={idx} className={isDay ? "rounded-md bg-white p-4 shadow-sm border border-travel-blue/20" : ""}>
+                      <div
+                        key={idx}
+                        className={
+                          isDay
+                            ? "rounded-md bg-white p-4 shadow-sm border border-travel-blue/20"
+                            : isSubheading
+                              ? ""
+                              : ""
+                        }
+                      >
                         {isDay ? (
                           <div className="flex items-start gap-3">
                             <div className="mt-1 w-2 h-2 rounded-full bg-travel-blue shadow" />
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-gray-900">{block.split("\n")[0]}</h4>
                               {block
                                 .split("\n")
@@ -198,10 +275,23 @@ export function SriLankaItineraryList({ itineraries, sectionTitle, sectionSubtit
                                     {renderWithHighlights(line)}
                                   </p>
                                 ))}
+                              {imageGrid}
                             </div>
                           </div>
+                        ) : isSubheading ? (
+                          <div className="pl-1">
+                            <h5 className="font-semibold text-gray-900 text-sm">{trimmed}</h5>
+                            {imageGrid}
+                          </div>
                         ) : (
-                          <p className="text-gray-700 text-sm leading-relaxed">{renderWithHighlights(block)}</p>
+                          <div>
+                            {block.split("\n").map((line, i) => (
+                              <p key={i} className="text-gray-700 text-sm leading-relaxed mt-2 first:mt-0">
+                                {renderWithHighlights(line)}
+                              </p>
+                            ))}
+                            {imageGrid}
+                          </div>
                         )}
                       </div>
                     );
